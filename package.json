@@ -15,6 +15,15 @@
     },
     "browser": "./browser.mjs"
   },
+  "files": [
+    "actionlint.cjs",
+    "browser.mjs",
+    "main.wasm",
+    "node.cjs",
+    "node.mjs",
+    "types/node.d.mts",
+    "wasm_exec.js"
+  ],
   "devDependencies": {
     "@types/golang-wasm-exec": "^1.15.0",
     "@types/node": "^17.0.21",
