@@ -12,6 +12,32 @@ jobs:
       - run: yarn install
       - run: make build
       - run: yarn test
+      - name: Integration test
+        run: |
+          dir=$(pwd)
+          tmp=$(mktemp -d)
+
+          yarn pack
+          cd $tmp
+          yarn init -y
+          yarn add "$dir/actionlint-v0.0.0.tgz"
+
+          # verify package exports
+          ls -la "node_modules/actionlint/$(jq ".exports.types" -r node_modules/actionlint/package.json)"
+          ls -la "node_modules/actionlint/$(jq ".exports.node.import" -r node_modules/actionlint/package.json)"
+          ls -la "node_modules/actionlint/$(jq ".exports.node.require" -r node_modules/actionlint/package.json)"
+          ls -la "node_modules/actionlint/$(jq ".exports.browser" -r node_modules/actionlint/package.json)"
+
+          cat << EOF > test.js
+            const linter = require('actionlint').createLinter();
+            linter('on: psuh', 'push.yml').then(
+              (results) => process.exit(results.length > 0 ? 0 : 1),
+              (err) => { console.error(err); process.exit(1); }
+            );
+          EOF
+
+          # test that the linter works
+          node test.js
       - name: release
         if: github.ref == 'refs/heads/main'
         run: npx --yes semantic-release --branches main
