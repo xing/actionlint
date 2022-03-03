@@ -1,0 +1,20 @@
+name: CI
+
+on: push
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+      - uses: actions/setup-node@v3
+      - run: yarn install
+      - run: make build
+      - run: yarn test
+      - name: release
+        if: github.ref == 'refs/heads/main'
+        run: npx --yes semantic-release --branches main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

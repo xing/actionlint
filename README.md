@@ -1,0 +1,2 @@
+# actionlint
+Actionlint as wasm
