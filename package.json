@@ -7,23 +7,15 @@
     "test": "tape test.mjs | tap-spec"
   },
   "main": "./node.cjs",
+  "types": "./types.d.ts",
   "exports": {
-    "types": "./types/node.d.mts",
+    "types": "./types.d.ts",
     "node": {
       "import": "./node.mjs",
       "require": "./node.cjs"
     },
     "browser": "./browser.mjs"
   },
-  "files": [
-    "actionlint.cjs",
-    "browser.mjs",
-    "main.wasm",
-    "node.cjs",
-    "node.mjs",
-    "types/node.d.mts",
-    "wasm_exec.js"
-  ],
   "devDependencies": {
     "@types/golang-wasm-exec": "^1.15.0",
     "@types/node": "^17.0.21",

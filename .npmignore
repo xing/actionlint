@@ -1,0 +1,11 @@
+.github/
+.vscode/
+go.mod
+go.sum
+globals.d.ts
+main.go
+Makefile
+renovate.json
+test.mjs
+tsconfig.json
+yarn.lock

@@ -2,14 +2,8 @@ require("./wasm_exec.js");
 
 /**
  * @typedef {(go: Go) => Promise<WebAssembly.WebAssemblyInstantiatedSource>} WasmLoader
- * @typedef {(source: string, path: string) => Promise<LintResult[]>} RunActionlint
- *
- * @typedef {Object} LintResult
- * @property {string} Message
- * @property {string} Filepath
- * @property {number} Line
- * @property {number} Column
- * @property {string} Kind
+ * @typedef {import("./types").RunActionlint} RunActionlint
+ * @typedef {import("./types").LintResult} LintResult
  */
 
 /**

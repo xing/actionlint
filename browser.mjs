@@ -1,9 +1,9 @@
 import { createActionlint } from "./actionlint.cjs";
 
 /**
- * @typedef {import("./actionlint.cjs").LintResult} LintResult
- * @typedef {import("./actionlint.cjs").WasmLoader} WasmLoader
- * @typedef {import("./actionlint.cjs").RunActionlint} RunActionlint
+ * @typedef {(go: Go) => Promise<WebAssembly.WebAssemblyInstantiatedSource>} WasmLoader
+ * @typedef {import("./types").RunActionlint} RunActionlint
+ * @typedef {import("./types").LintResult} LintResult
  */
 
 /** @type {RunActionlint | undefined} */

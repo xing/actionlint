@@ -7,20 +7,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
-      - uses: actions/setup-node@v3
-      - run: yarn install
-      - run: make build
-      - run: yarn test
+
+      - name: Setup Go
+        uses: actions/setup-go@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Build
+        run: make build
+
+      - name: Test
+        run: yarn test
+
       - name: Integration test
         run: |
           dir=$(pwd)
           tmp=$(mktemp -d)
 
           yarn pack
-          cd $tmp
+          cd "$tmp" || exit 1
           yarn init -y
-          yarn add "$dir/actionlint-v0.0.0.tgz"
+          yarn add "$dir/actionlint-v0.0.0.tgz" typescript @types/node
 
           # verify package exports
           ls -la "node_modules/actionlint/$(jq ".exports.types" -r node_modules/actionlint/package.json)"
@@ -28,16 +39,21 @@ jobs:
           ls -la "node_modules/actionlint/$(jq ".exports.node.require" -r node_modules/actionlint/package.json)"
           ls -la "node_modules/actionlint/$(jq ".exports.browser" -r node_modules/actionlint/package.json)"
 
-          cat << EOF > test.js
-            const linter = require('actionlint').createLinter();
-            linter('on: psuh', 'push.yml').then(
+          cat << EOF > test.mjs
+            import { createLinter } from 'actionlint';
+            createLinter()('on: psuh', 'push.yml').then(
               (results) => process.exit(results.length > 0 ? 0 : 1),
               (err) => { console.error(err); process.exit(1); }
             );
           EOF
 
           # test that the linter works
-          node test.js
+          node test.mjs
+
+          # test that the types are correctly included
+          mv test.mjs test.ts
+          yarn tsc --noEmit --strict ./test.ts
+
       - name: release
         if: github.ref == 'refs/heads/main'
         run: npx --yes semantic-release --branches main
