@@ -1,4 +1,4 @@
-require("./wasm_exec.js");
+require("./tiny_wasm_exec.js");
 
 /**
  * @typedef {(go: Go) => Promise<WebAssembly.WebAssemblyInstantiatedSource>} WasmLoader
