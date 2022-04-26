@@ -1,54 +1,84 @@
 package main
 
 import (
+	"container/list"
 	"io/ioutil"
-	"reflect"
-	"syscall/js"
+	"strconv"
+	"strings"
 
 	"github.com/rhysd/actionlint"
 )
 
-func toMap(input interface{}) map[string]interface{} {
-  out := make(map[string]interface{})
-  value := reflect.ValueOf(input)
-  if value.Kind() == reflect.Ptr {
-    value = value.Elem()
-  }
+var Memory = list.New()
+var OutputString = []byte{}
 
-  for i := 0; i < value.NumField(); i++ {
-    out[value.Type().Field(i).Name] = value.Field(i).Interface()
-  }
-
-  return out
+type block struct {
+	ptr	*[]byte
+	value []byte
 }
 
-func runActionlint(source string, filePath string) (interface{}, error) {
+//export WasmAlloc
+func WasmAlloc(size int) *[]byte {
+	slice := make([]byte, size)
+	block := block{
+		ptr: &slice,
+		value: slice,
+	}
+	Memory.PushBack(block)
+
+	return block.ptr
+}
+
+//export WasmFree
+func WasmFree(ptr *[]byte) {
+	for e := Memory.Front(); e != nil; e = e.Next() {
+		block := e.Value.(block)
+		if block.ptr == ptr {
+			Memory.Remove(e)
+			return
+		}
+	}
+}
+
+func serialize(errors []*actionlint.Error, target *[]byte) {
+	*target = []byte("[")
+
+	for i, err := range errors {
+		*target = append(*target, `{
+	"file":"`+err.Filepath+`",
+	"line":`+strconv.FormatInt(int64(err.Line), 10)+`,
+	"column":`+strconv.FormatInt(int64(err.Column), 10)+`,
+	"message":"`+strings.ReplaceAll(err.Message, `"`, `\"`)+`",
+	"kind":"`+strings.ReplaceAll(err.Kind, `"`, `\"`)+`"
+}`...)
+
+		if i < len(errors)-1 {
+			*target = append(*target, ',')
+		}
+	}
+
+	*target = append(*target, ']', 0)
+}
+
+//export RunActionlint
+func RunActionlint(input []byte, path []byte) *byte {
 	opts := actionlint.LinterOptions{}
+
 	linter, err := actionlint.NewLinter(ioutil.Discard, &opts)
 	if err != nil {
-		return nil, err
+		OutputString = []byte(err.Error())
+		return &OutputString[0]
 	}
 
-  errs, err := linter.Lint(filePath, []byte(source), nil)
+	errs, err := linter.Lint(string(path), input, nil)
 	if err != nil {
-		return nil, err
+		OutputString = []byte(err.Error())
+		return &OutputString[0]
 	}
 
-	ret := make([]interface{}, 0, len(errs))
-	for _, err := range errs {
-		ret = append(ret, toMap(*err))
-	}
+	serialize(errs, &OutputString)
 
-	return ret, nil
+	return &OutputString[0]
 }
 
-func main() {
-  js.Global().Set("runActionlint", js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-    result, err := runActionlint(args[0].String(), args[1].String())
-		return js.Global().Get("Array").New(result, err)
-	}))
-
-  js.Global().Call("actionlintInitialized")
-
-	select {}
-}
+func main() {}

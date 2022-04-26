@@ -1,5 +1,5 @@
-const { join } = require("path");
-const { pathToFileURL } = require("url");
+const { join } = require("node:path");
+const { pathToFileURL } = require("node:url");
 const { readFile } = require("node:fs/promises");
 const { createActionlint } = require("./actionlint.cjs");
 
@@ -9,23 +9,16 @@ const { createActionlint } = require("./actionlint.cjs");
  * @typedef {import("./types").LintResult} LintResult
  */
 
-/** @type {RunActionlint | undefined} */
-let runLint = undefined;
-
 /**
  * @param {URL} url
- * @returns {RunActionlint}
+ * @returns {Promise<RunActionlint>}
  */
-module.exports.createLinter = function createLinter(
+module.exports.createLinter = async function createLinter(
   url = pathToFileURL(join(__dirname, "main.wasm"))
 ) {
-  if (runLint) {
-    return runLint;
-  }
-
-  return (runLint = createActionlint(
+  return await createActionlint(
     /** @type {WasmLoader} */ async (go) => {
       return WebAssembly.instantiate(await readFile(url), go.importObject);
     }
-  ));
+  );
 };

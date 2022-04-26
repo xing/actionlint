@@ -1,12 +1,11 @@
-export type RunActionlint = (
-  source: string,
-  path: string
-) => Promise<LintResult[]>;
+export type RunActionlint = (input: string, path: string) => LintResult[];
+
 export type LintResult = {
-  Message: string;
-  Filepath: string;
-  Line: number;
-  Column: number;
-  Kind: string;
+  file: string;
+  line: number;
+  column: number;
+  message: string;
+  kind: string;
 };
-export function createLinter(url?: URL): RunActionlint;
+
+export function createLinter(url?: URL): Promise<RunActionlint>;

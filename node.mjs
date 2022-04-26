@@ -7,21 +7,16 @@ import { createActionlint } from "./actionlint.cjs";
  * @typedef {import("./types").LintResult} LintResult
  */
 
-/** @type {RunActionlint | undefined} */
-let runLint = undefined;
-
 /**
  * @param {URL} url
- * @returns {RunActionlint}
+ * @returns {Promise<RunActionlint>}
  */
-export function createLinter(url = new URL("./main.wasm", import.meta.url)) {
-  if (runLint) {
-    return runLint;
-  }
-
-  return (runLint = createActionlint(
+export async function createLinter(
+  url = new URL("./main.wasm", import.meta.url)
+) {
+  return await createActionlint(
     /** @type {WasmLoader} */ async (go) => {
       return WebAssembly.instantiate(await readFile(url), go.importObject);
     }
-  ));
+  );
 }

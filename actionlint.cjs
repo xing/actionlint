@@ -8,54 +8,75 @@ require("./tiny_wasm_exec.js");
 
 /**
  * @param {WasmLoader} loader
- * @returns {RunActionlint}
+ * @returns {Promise<RunActionlint>}
  */
-module.exports.createActionlint = function createActionlint(loader) {
+module.exports.createActionlint = async function createActionlint(loader) {
+  const encoder = new TextEncoder();
+  const decoder = new TextDecoder();
   const go = new Go();
 
-  /** @type {(() => void)[] | undefined} */
-  let queued = undefined;
+  const wasm = await loader(go);
+  // Do not await this promise, because it only resolves once the go main()
+  // function has exited. But we need the main function to stay alive to be
+  // able to call the `runActionlint` function.
+  go.run(wasm.instance);
 
-  // This function gets called from go once the wasm module is ready and it
-  // executes the linter for all queued calls.
-  globalThis.actionlintInitialized = () => {
-    queued?.forEach((f) => f());
-    queued = globalThis.actionlintInitialized = undefined;
-  };
+  if (!(wasm.instance.exports.memory instanceof WebAssembly.Memory)) {
+    throw new Error("Could not get wasm memory");
+  }
+  const memory = wasm.instance.exports.memory;
 
-  loader(go).then((wasm) => {
-    // Do not await this promise, because it only resolves once the go main()
-    // function has exited. But we need the main function to stay alive to be
-    // able to call the `runActionlint` function.
-    go.run(wasm.instance);
-  });
+  if (!(wasm.instance.exports.WasmAlloc instanceof Function)) {
+    throw new Error("Could not get wasm alloc function");
+  }
+  const wasmAlloc = wasm.instance.exports.WasmAlloc;
+
+  if (!(wasm.instance.exports.WasmFree instanceof Function)) {
+    throw new Error("Could not get wasm free function");
+  }
+  const wasmFree = wasm.instance.exports.WasmFree;
+
+  if (!(wasm.instance.exports.RunActionlint instanceof Function)) {
+    throw new Error("Could not get wasm runActionLint function");
+  }
+  const runActionlint = wasm.instance.exports.RunActionlint;
 
   /**
-   * @param {string} src
+   * @param {string} input
    * @param {string} path
-   * @returns {Promise<LintResult[]>}
+   * @returns {LintResult[]}
    */
-  return async function runLint(src, path) {
-    // Return a promise, because we need to queue calls to `runLint()` while the
-    // wasm module is still loading and execute them once the wasm module is
-    //ready.
-    return new Promise((resolve, reject) => {
-      if (typeof runActionlint === "function") {
-        const [result, err] = runActionlint(src, path);
-        return err ? reject(err) : resolve(result);
-      }
+  return function runLint(input, path) {
+    const workflow = encoder.encode(input);
+    const filePath = encoder.encode(path);
 
-      if (!queued) {
-        queued = [];
-      }
+    const workflowPointer = wasmAlloc(workflow.byteLength);
+    new Uint8Array(memory.buffer).set(workflow, workflowPointer);
 
-      queued.push(() => {
-        const [result, err] = runActionlint?.(src, path) ?? [
-          [],
-          new Error('"runActionlint" is not defined'),
-        ];
-        return err ? reject(err) : resolve(result);
-      });
-    });
+    const filePathPointer = wasmAlloc(filePath.byteLength);
+    new Uint8Array(memory.buffer).set(filePath, filePathPointer);
+
+    const resultPointer = runActionlint(
+      workflowPointer,
+      workflow.byteLength,
+      workflow.byteLength,
+      filePathPointer,
+      filePath.byteLength,
+      filePath.byteLength
+    );
+
+    wasmFree(workflowPointer);
+    wasmFree(filePathPointer);
+
+    const result = new Uint8Array(memory.buffer).subarray(resultPointer);
+    const end = result.indexOf(0);
+
+    const string = decoder.decode(result.subarray(0, end));
+
+    try {
+      return JSON.parse(string);
+    } catch {
+      throw new Error(string);
+    }
   };
 };

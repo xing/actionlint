@@ -1,20 +1,17 @@
-build: wasm_exec.js main.wasm types/node.d.mts
+build: main.wasm types/node.d.mts
 
-wasm_exec.js:
-	cp $$(go env GOROOT)/misc/wasm/wasm_exec.js wasm_exec.tmp.js
-	echo "// @ts-nocheck" > wasm_exec.js
-	cat wasm_exec.tmp.js >> wasm_exec.js
-	rm wasm_exec.tmp.js
+main.wasm: tmp.wasm
+	wasm-opt -c -O4 -o main.wasm tmp.wasm
 
-main.wasm: main.go go.mod
-	GOOS=js GOARCH=wasm go build -o main.wasm
+tmp.wasm: main.go go.mod
+	tinygo build -o tmp.wasm -target wasm -panic trap -opt z main.go
 
 types/node.d.mts: *.cjs *.mjs *.d.ts *.json yarn.lock
 	$$(yarn bin)/tsc -p .
 
 clean:
 	rm main.wasm
-	rm wasm_exec.js
+	rm tmp.wasm
 	rm -rf types
 
 .PHONY: build clean
