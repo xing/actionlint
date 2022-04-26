@@ -1,4 +1,4 @@
 main.wasm
-wasm_exec.js
+tmp.wasm
 node_modules/
 types/

@@ -1,11 +1,12 @@
 .github/
 .vscode/
+node_modules/
 go.mod
 go.sum
-globals.d.ts
 main.go
 Makefile
 renovate.json
 test.mjs
+tmp.wasm
 tsconfig.json
 yarn.lock

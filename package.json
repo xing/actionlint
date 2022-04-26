@@ -2,7 +2,7 @@
   "name": "actionlint",
   "version": "0.0.0",
   "license": "MIT",
-  "sideEffects": true,
+  "sideEffects": false,
   "scripts": {
     "test": "tape test.mjs | tap-spec"
   },

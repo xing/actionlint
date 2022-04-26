@@ -43,10 +43,10 @@ jobs:
 
           cat << EOF > test.mjs
             import { createLinter } from 'actionlint';
-            createLinter()('on: psuh', 'push.yml').then(
-              (results) => process.exit(results.length > 0 ? 0 : 1),
-              (err) => { console.error(err); process.exit(1); }
-            );
+            createLinter().then(lint => {
+              const results = lint('on: psuh', 'push.yml');
+              process.exit(results.length > 0 ? 0 : 1)
+            }, (err) => { console.error(err); process.exit(1); });
           EOF
 
           # test that the linter works
