@@ -11,7 +11,7 @@ jobs:
       - name: Setup TinyGo
         uses: ./.github/actions/setup-tinygo
         with:
-          version: 3d6880470204fdf6449c9fd0a7fedba8f8361724 # latest commit on dev at the time of writing
+          version: fce42fc7fa22f9a8061ef8700e2d17a6082f782e # latest commit on dev at the time of writing
 
       - name: Setup Node
         uses: actions/setup-node@v3
