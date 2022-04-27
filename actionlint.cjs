@@ -21,25 +21,18 @@ module.exports.createActionlint = async function createActionlint(loader) {
   // able to call the `runActionlint` function.
   go.run(wasm.instance);
 
-  if (!(wasm.instance.exports.memory instanceof WebAssembly.Memory)) {
-    throw new Error("Could not get wasm memory");
-  }
-  const memory = wasm.instance.exports.memory;
+  const { memory, WasmAlloc, WasmFree, RunActionlint } = wasm.instance.exports;
 
-  if (!(wasm.instance.exports.WasmAlloc instanceof Function)) {
-    throw new Error("Could not get wasm alloc function");
+  if (
+    !(memory instanceof WebAssembly.Memory) ||
+    !(WasmAlloc instanceof Function) ||
+    !(WasmFree instanceof Function) ||
+    !(RunActionlint instanceof Function)
+  ) {
+    throw new Error(
+      "Invalid wasm exports. Expected memory, WasmAlloc, WasmFree, RunActionlint."
+    );
   }
-  const wasmAlloc = wasm.instance.exports.WasmAlloc;
-
-  if (!(wasm.instance.exports.WasmFree instanceof Function)) {
-    throw new Error("Could not get wasm free function");
-  }
-  const wasmFree = wasm.instance.exports.WasmFree;
-
-  if (!(wasm.instance.exports.RunActionlint instanceof Function)) {
-    throw new Error("Could not get wasm runActionLint function");
-  }
-  const runActionlint = wasm.instance.exports.RunActionlint;
 
   /**
    * @param {string} input
@@ -50,13 +43,13 @@ module.exports.createActionlint = async function createActionlint(loader) {
     const workflow = encoder.encode(input);
     const filePath = encoder.encode(path);
 
-    const workflowPointer = wasmAlloc(workflow.byteLength);
+    const workflowPointer = WasmAlloc(workflow.byteLength);
     new Uint8Array(memory.buffer).set(workflow, workflowPointer);
 
-    const filePathPointer = wasmAlloc(filePath.byteLength);
+    const filePathPointer = WasmAlloc(filePath.byteLength);
     new Uint8Array(memory.buffer).set(filePath, filePathPointer);
 
-    const resultPointer = runActionlint(
+    const resultPointer = RunActionlint(
       workflowPointer,
       workflow.byteLength,
       workflow.byteLength,
@@ -65,8 +58,8 @@ module.exports.createActionlint = async function createActionlint(loader) {
       filePath.byteLength
     );
 
-    wasmFree(workflowPointer);
-    wasmFree(filePathPointer);
+    WasmFree(workflowPointer);
+    WasmFree(filePathPointer);
 
     const result = new Uint8Array(memory.buffer).subarray(resultPointer);
     const end = result.indexOf(0);
