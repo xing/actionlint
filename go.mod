@@ -16,4 +16,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.0 // indirect
 )
 
-replace gopkg.in/yaml.v3 => github.com/ZauberNerd/yaml v0.0.0-20220305122605-f022dd71f1c2
+replace gopkg.in/yaml.v3 => github.com/ZauberNerd/yaml/v2 v2.4.0
