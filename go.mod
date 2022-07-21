@@ -1,6 +1,6 @@
 module source.xing.com/fea/act-app
 
-go 1.17
+go 1.18
 
 require github.com/rhysd/actionlint v1.6.15
 
