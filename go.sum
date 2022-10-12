@@ -29,6 +29,8 @@ github.com/rhysd/actionlint v1.6.15 h1:IxQIp10aVce77jNnoHye7NFka8/7CRBSvKXoMRGry
 github.com/rhysd/actionlint v1.6.15/go.mod h1:R4ZRjgsIrnsT1CPU/4MdiIBzfJgMKJFd4qqGUERI098=
 github.com/rhysd/actionlint v1.6.19 h1:6MIXhlU8Mn41YnJro/QNrQRECiW6POdwmnOTCT38QNc=
 github.com/rhysd/actionlint v1.6.19/go.mod h1:gIKOdxtV40mBOcD0ZR8EBa8NqjEXToAZioroS3oedMg=
+github.com/rhysd/actionlint v1.6.21 h1:OSCP03XnvWSRAhUmA5onpgyGG+3NVoQTCu4UX0Rc2dY=
+github.com/rhysd/actionlint v1.6.21/go.mod h1:gIKOdxtV40mBOcD0ZR8EBa8NqjEXToAZioroS3oedMg=
 github.com/rivo/uniseg v0.2.0 h1:S1pD9weZBuJdFmowNwbpi7BJ8TNftyUImj/0WQi72jY=
 github.com/rivo/uniseg v0.2.0/go.mod h1:J6wj4VEh+S6ZtnVlnTBMWIodfgj8LQOQFoIToxlJtxc=
 github.com/robfig/cron v1.2.0 h1:ZjScXvvxeQ63Dbyxy76Fj3AT3Ut0aKsyd2/tl3DTMuQ=
