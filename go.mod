@@ -2,7 +2,7 @@ module source.xing.com/fea/act-app
 
 go 1.17
 
-require github.com/rhysd/actionlint v1.6.21
+require github.com/rhysd/actionlint v1.6.22
 
 require (
 	github.com/fatih/color v1.13.0 // indirect
