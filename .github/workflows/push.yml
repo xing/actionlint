@@ -14,7 +14,7 @@ jobs:
           version: fce42fc7fa22f9a8061ef8700e2d17a6082f782e # latest commit on dev at the time of writing
 
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
 
       - name: Install dependencies
         run: yarn install
