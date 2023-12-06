@@ -16,7 +16,7 @@ runs:
         sudo apt-get -yqq install clang-13 llvm-13-dev lld-13 libclang-13-dev
       shell: bash
 
-    - uses: actions/setup-go@v3
+    - uses: actions/setup-go@v5
       with:
         go-version: 1.18
 
